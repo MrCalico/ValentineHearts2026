@@ -89,7 +89,9 @@ const CRGB HEART_COLORS[NUM_HEART_LEVELS] = {
 // Arrow mapping on the main strip: this project uses a single LED strip.
 // The arrow lives at the start of the main strip (index 0). Adjust
 // ARROW_MAIN_LENGTH to match the number of pixels wired to the arrow.
-constexpr uint16_t ARROW_MAIN_START = 0;
+constexpr uint16_t ARROW_MAIN_START = 0; // index where arrow region starts (for reference)
+constexpr uint16_t ARROW_BREAK_START = 190; // index where arrow region ends and hearts start (for reference)
+const uint16_t ARROW_BREAK_END = 230; // index where arrow region ends and hearts start (for reference)
 constexpr uint16_t ARROW_MAIN_LENGTH = 284; // arrow occupies ~284 pixels at start of main strip
 const CRGB ARROW_COLOR = CRGB(255, 100, 140);
 // Flash timing for arrow accent at end of a show cycle
@@ -211,43 +213,8 @@ void setup() {
     }
   }
 
-  // QueueTrack(11, true, TRAIN_VOLUME); // Play initial track 11 and wait for completion
+  QueueTrack(1, false, TRAIN_VOLUME); // Play initial track 11 and wait for completion
 }
-
-void SantaStop() {
-  Serial.println(F("Santa Stop Triggered!"));
-
-  QueueTrack(MP3_MerryChristmas, false, TRAIN_VOLUME); // Play track 12 and wait for completion
-  
-  // Chase lights from ends to middle while Santa is talking
-  FastLED.setBrightness(128); // 0..255 (128 ~ 50%)
-  
-  int step = 0;
-  const int maxSteps = (NUM_HOUSE_LEDS + 1) / 2;
-
-  while(digitalRead(BUSY_PIN) == LOW) {
-    fill_solid(ledsHouse, NUM_HOUSE_LEDS, CRGB::Black);
-    
-    // Light up pixels from both ends moving inward
-    ledsHouse[step] = CRGB(100, 100, 100);
-    ledsHouse[NUM_HOUSE_LEDS - 1 - step] = CRGB(100, 100, 100);
-    
-    FastLED.show();
-    delay(150);
-    
-    step++;
-    if(step >= maxSteps) {
-      step = 0;
-    }
-  }
-  
-  fill_solid(ledsHouse, NUM_HOUSE_LEDS, CRGB::Black);
-  FastLED.show();
-  FastLED.setBrightness(255); // 0..255 (128 ~ 50%)
-
-}
-
-const int SantaStopPosition = 700; // position index to trigger Santa stop
 
 void loop() {
   // New heart animation loop
@@ -327,13 +294,20 @@ void loop() {
   // Check show cycle elapsed; if so, flash the arrow for ARROW_FLASH_MS
   if (now - showCycleStart >= SHOW_CYCLE_MS) {
     uint32_t flashStart = millis();
+    QueueTrack(8, false, TRAIN_VOLUME); // Play initial track 11 and wait for completion
     while (millis() - flashStart < ARROW_FLASH_MS) {
       // blink arrow on (main strip)
       for (uint16_t a = 0; a < ARROW_MAIN_LENGTH; ++a) {
         uint16_t idx = (ARROW_MAIN_START + a) % NUM_LEDS;
         leds[idx] = ARROW_COLOR;
       }
+      // need to black out a section of the arrow region to create a gap before the hearts start
+      for (uint16_t g = 140; g < 170; ++g) {
+        uint16_t idx = (g);
+        leds[idx] = CRGB::Black;
+      }
       FastLED.show();
+
       delay(ARROW_BLINK_MS);
       // blink arrow off
       for (uint16_t a = 0; a < ARROW_MAIN_LENGTH; ++a) {
@@ -343,6 +317,7 @@ void loop() {
       FastLED.show();
       delay(ARROW_BLINK_MS);
     }
+    QueueTrack(1, false, TRAIN_VOLUME); // Play initial track 11 and wait for completion
     // reset cycle
     showCycleStart = millis();
     // ensure house strip off after flash
