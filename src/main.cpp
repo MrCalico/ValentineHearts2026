@@ -211,7 +211,7 @@ void setup() {
     }
   }
 
-  // QueueTrack(11, true, TRAIN_VOLUME); // Play initial track 11 and wait for completion.
+  // QueueTrack(11, true, TRAIN_VOLUME); // Play initial track 11 and wait for completion
 }
 
 void SantaStop() {
