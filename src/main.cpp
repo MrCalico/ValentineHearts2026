@@ -298,7 +298,7 @@ void loop() {
   // Check show cycle elapsed; if so, flash the arrow for ARROW_FLASH_MS
   if (now - showCycleStart >= SHOW_CYCLE_MS) {
     uint32_t flashStart = millis();
-    QueueTrack(8, false, SPEAKER_VOLUME); // Play initial track 11 and wait for completion
+    QueueTrack(8, false, currentVolume); // Play initial track 11 and wait for completion
     while (millis() - flashStart < ARROW_FLASH_MS) {
       // blink arrow on (main strip)
       for (uint16_t a = 0; a < ARROW_MAIN_LENGTH; ++a) {
