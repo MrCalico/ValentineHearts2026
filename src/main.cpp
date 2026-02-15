@@ -3,16 +3,16 @@
 #include <DFRobotDFPlayerMini.h>
 #include <HardwareSerial.h>
 
-const int MP3_STATION = 13;
-const int MP3_HORN = 2;
-const int MP3_RUNNING = 3;
+const int MP3_UPBEAT_MUSIC = 1;
+const int MP3_MUSIC_HEARTBEAT = 2;
+const int MP3_KISS = 3;
 const int MP3_BELL = 4;
 const int MP3_WHISTLE = 5;
 const int MP3_CROSSING_HORN = 6;
-const int MP3_CROSSING_BELL = 7;
+const int MP3_I_LOVE_YOU = 6;
 const int MP3_Whistle2 = 8;
 const int MP3_Crossing_Bell2 = 9;
-const int MP3_ABORD = 10;
+const int MP3_NEON = 10;
 const int MP3_MerryChristmas = 11;
 const int MP3_Station = 12;
 const int MP3_Parked = 13;
@@ -21,8 +21,8 @@ const uint8_t NUM_CARS = 11;  // number of train cars (not including locomotive 
 // START_OFFSET removed — track is circular starting at index 0
 
 // initial speed (ms between frames). We'll copy this into a mutable variable so a pot can control it.
-const uint16_t TRAIN_SPEED = 220;  // default speed (ms between frames)
-const uint8_t  TRAIN_VOLUME = 30;  // Volume level for DFPlayer Mini (0-30)
+const uint16_t ANIMATION_SPEED = 220;  // default speed (ms between frames)
+const uint8_t  SPEAKER_VOLUME = 30;  // Volume level for DFPlayer Mini (0-30)
 
 //DFRobot DFPlayer Mini setup
 // We'll use UART2 (index 2). You can use 1 for UART1 if you prefer.
@@ -102,7 +102,7 @@ constexpr uint32_t ARROW_FLASH_MS = 3UL * 1000UL; // flash arrow for 3 seconds
 constexpr uint32_t ARROW_BLINK_MS = 250UL; // blink interval during flash
 
 
-void QueueTrack(int track, bool waitForCompletion = true, uint8_t volume = TRAIN_VOLUME, uint16_t duration = std::numeric_limits<uint16_t>::max())
+void QueueTrack(int track, bool waitForCompletion = true, uint8_t volume = SPEAKER_VOLUME, uint16_t duration = std::numeric_limits<uint16_t>::max())
 {
   static uint8_t lastVolume = 255;
 
@@ -212,16 +212,20 @@ void setup() {
       Serial.println(heartLevelSizes[L]);
     }
   }
-
-  QueueTrack(1, false, TRAIN_VOLUME); // Play initial track 11 and wait for completion
+  
+/*   for (uint8_t i = 1; i < 12; ++i) {
+    QueueTrack(i, true, SPEAKER_VOLUME); // Play initial track 11 and wait for completion
+  } */
+  
+  QueueTrack(MP3_MUSIC_HEARTBEAT, false, SPEAKER_VOLUME); // Play initial track 11 and wait for completion}
 }
 
 void loop() {
   // New heart animation loop
   static uint32_t lastPotRead = 0;
-  static uint8_t currentVolume = TRAIN_VOLUME;
+  static uint8_t currentVolume = SPEAKER_VOLUME;
   static uint32_t lastSpeedRead = 0;
-  static int frameDelayMs = TRAIN_SPEED; // controlled by speed pot
+  static int frameDelayMs = ANIMATION_SPEED; // controlled by speed pot
   static uint32_t showCycleStart = millis();
   static uint16_t arrowPos = 0; // retained for flash sequence
 
@@ -294,7 +298,7 @@ void loop() {
   // Check show cycle elapsed; if so, flash the arrow for ARROW_FLASH_MS
   if (now - showCycleStart >= SHOW_CYCLE_MS) {
     uint32_t flashStart = millis();
-    QueueTrack(8, false, TRAIN_VOLUME); // Play initial track 11 and wait for completion
+    QueueTrack(8, false, SPEAKER_VOLUME); // Play initial track 11 and wait for completion
     while (millis() - flashStart < ARROW_FLASH_MS) {
       // blink arrow on (main strip)
       for (uint16_t a = 0; a < ARROW_MAIN_LENGTH; ++a) {
@@ -317,7 +321,9 @@ void loop() {
       FastLED.show();
       delay(ARROW_BLINK_MS);
     }
-    QueueTrack(1, false, TRAIN_VOLUME); // Play initial track 11 and wait for completion
+    QueueTrack(MP3_I_LOVE_YOU, true, currentVolume); // Play initial track 11 and wait for completion
+    QueueTrack(MP3_KISS, true, currentVolume, 2000); // Play initial track 11 and wait for completion
+    QueueTrack(MP3_MUSIC_HEARTBEAT, false, currentVolume); // Play initial track 11 and wait for completion
     // reset cycle
     showCycleStart = millis();
     // ensure house strip off after flash
